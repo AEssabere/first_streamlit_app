@@ -55,31 +55,46 @@ try:
 except URLError as e:
   streamlit.error()
   
+
+streamlit.header(" View our fruit list ")
+
+# function to get data from snowflake
+def get_fruit_load_list():
+  with my_cnx.cursor() as my_cur:
+    my_cur.execute("SELECT * FROM pc_rivery_db.public.fruit_load_list")
+    return  my_cur.fetchall()
   
- 
-# stop streamlit temporarily
-streamlit.stop()
+# add a button to load a fruit
+if streamlit.button('Get fruit load list'):
+  # snowflake connection
+  my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
+  my_data_rows = get_fruit_load_list()
+  
+  # close snowflake connection
+  my_cnx.close()
+  
+  # display fruit list as a dataframe
+  streamlit.dataframe(my_data_rows)
+  
+# function to insert data into snowflake's database table
+def insert_fruit_load_list(new_fruit):
+  with my_cnx.cursor() as my_cur:
+    my_cur.execute("INSERT INTO pc_rivery_db.public.fruit_load_list values ('" + new_fruit + "')")
+    return  "thanks for adding" + new_fruit
 
-# snowflake connection
-my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
-my_cur = my_cnx.cursor()
-
-# execute sql command from snowflake
-my_cur.execute("SELECT CURRENT_USER(), CURRENT_ACCOUNT(), CURRENT_REGION()")
-my_data_row = my_cur.fetchone()
-streamlit.text("Hello from Snowflake:")
-streamlit.text(my_data_row)
-
-# get all fruits from fruit load list table in snowflake
-my_cur.execute("SELECT * FROM pc_rivery_db.public.fruit_load_list")
-my_data_rows = my_cur.fetchall()
-streamlit.header("the fruit list contains : ")
-streamlit.dataframe(my_data_rows)
-
+streamlit.header(" Add your favorites ")
+  
 # user chooses fruit to add
 add_fruit = streamlit.text_input('What fruit would you like to add ?')
-streamlit.write('Thanks for adding ', add_fruit)
 
-# insertion 
-my_cur.execute("INSERT INTO pc_rivery_db.public.fruit_load_list values ('from streamlit')")
+if streamlit.button('add fruit to the list'):
+  # snowflake connection
+  my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
+  
+  # close snowflake connection
+  my_cnx.close()
+  
+  # insert the new fruit chosen by the user
+  streamlit.text(insert_fruit_load_list(add_fruit))
+
 
