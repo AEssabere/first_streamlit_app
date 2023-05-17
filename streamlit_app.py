@@ -52,5 +52,11 @@ my_data_row = my_cur.fetchone()
 streamlit.text("Hello from Snowflake:")
 streamlit.text(my_data_row)
 
+# get all fruits from fruit load list table in snowflake
+my_cur.execute("SELECT * FROM fruit_load_list")
+my_data_rows = my_cur.fetchall()
+streamlit.header("the fruit list contains : ")
+streamlit.dataframe(my_data_rows)
+
 
 
